@@ -1,3 +1,3 @@
 (ns com.ogawa.settings)
 
-(def app-name "My Application")
+(def app-name "Ogawa")

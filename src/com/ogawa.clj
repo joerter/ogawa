@@ -3,7 +3,6 @@
             [com.ogawa.email :as email]
             [com.ogawa.app :as app]
             [com.ogawa.home :as home]
-            [com.ogawa.worker :as worker]
             [com.ogawa.schema :as schema]
             [clojure.test :as test]
             [clojure.tools.logging :as log]
@@ -16,8 +15,7 @@
   [app/plugin
    (biff/authentication-plugin {})
    home/plugin
-   schema/plugin
-   worker/plugin])
+   schema/plugin])
 
 (def routes [["" {:middleware [biff/wrap-site-defaults]}
               (keep :routes plugins)]
