@@ -68,7 +68,7 @@
      "The world's finest streaming platform"]
     [:.h-2]
     [:.sm:text-lg.sm:text-center.w-full
-     "Communities, channels, messages, even RSS—ogawa has it all. Coming soon."]
+     "Easily stream life's important moments. Coming soon."]
     [:.h-6]
     (signup-form ctx)
     [:.h-12 {:class "grow-[2]"}]
