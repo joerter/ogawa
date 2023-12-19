@@ -8,13 +8,13 @@
 
 (defn signin-link [{:keys [to url user-exists]}]
   {:to to
-   :subject "Join the ogawa waitlist"
+   :subject "Join the " settings/app-name " waitlist"
    :html-body (rum/render-static-markup
                [:html
                 [:body
                  [:p "We received a request to join " settings/app-name
                   " using this email address. Click this link to join:"]
-                 [:p [:a {:href url :target "_blank"} "Join the eelchat waitlist"]]
+                 [:p [:a {:href url :target "_blank"} "Join the " settings/app-name " waitlist"]]
                  [:p "This link will expire in one hour. "
                   "If you did not request this link, you can ignore this email."]]])
    :text-body (str "We received a request to join " settings/app-name
@@ -55,9 +55,9 @@
      :signin-code signin-code)
    opts))
 
-(defn send-postmark [{:keys [biff/secret postmark/from]} form-params]
+(defn send-postmark [{:keys [postmark/api-key postmark/from]} form-params]
   (let [result (http/post "https://api.postmarkapp.com/email"
-                          {:headers {"X-Postmark-Server-Token" (secret :postmark/api-key)}
+                          {:headers {"X-Postmark-Server-Token" api-key}
                            :as :json
                            :content-type :json
                            :form-params (merge {:from from} (cske/transform-keys csk/->PascalCase form-params))
@@ -77,12 +77,13 @@
            "API keys for Postmark and Recaptcha to config.edn.")
   true)
 
-(defn send-email [{:keys [biff/secret recaptcha/site-key] :as ctx} opts]
+(defn send-email [{:keys [recaptcha/site-key postmark/api-key recaptcha/secret-key] 
+                   :as ctx} opts]
   (let [form-params (if-some [template-key (:template opts)]
                       (template template-key opts)
                       opts)]
-    (if (every? some? [(secret :postmark/api-key)
-                       (secret :recaptcha/secret-key)
+    (if (every? some? [api-key
+                       secret-key
                        site-key])
       (send-postmark ctx form-params)
       (send-console ctx form-params))))
