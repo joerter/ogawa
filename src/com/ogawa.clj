@@ -51,7 +51,7 @@
    :biff/malli-opts #'malli-opts
    :biff.beholder/on-save #'on-save
    :biff.xtdb/tx-fns biff/tx-fns
-   :com.ogawa/chat-clients (atom #{})})
+   :com.ogawa/chat-clients (atom {})})
 
 (defonce system (atom {}))
 

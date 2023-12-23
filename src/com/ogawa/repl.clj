@@ -35,7 +35,8 @@
   (add-fixtures)
 
   (defn get-secret [ctx k]
-  (some-> (get ctx k)
+
+  (some-> (get {:postmark/api-key "1234abc"} :postmark/api-key)
           (System/getenv)
           not-empty))
 
@@ -51,6 +52,8 @@
   (deref (biff/submit-job-for-result (get-context) :echo {:foo "bar"}))
   
   (seed-channels)
+
+  (pr {:john "is cool"})
   
   (let [{:keys [biff/db] :as ctx} (get-context)]
     (q db
