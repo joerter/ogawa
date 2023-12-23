@@ -9,9 +9,22 @@
 
 (defn add-fixtures []
   (biff/submit-tx (get-context)
-    (-> (io/resource "fixtures.edn")
-        slurp
-        edn/read-string)))
+                  (-> (io/resource "fixtures.edn")
+                      slurp
+                      edn/read-string)))
+
+(defn seed-channels []
+  (let [{:keys [biff/db] :as ctx} (get-context)]
+    (biff/submit-tx ctx
+                    (for [[mem chan] (q db
+                                        '{:find [mem chan]
+                                          :where [[mem :mem/comm comm]
+                                                  [chan :chan/comm comm]]})]
+                      {:db/doc-type :message
+                       :msg/mem mem
+                       :msg/channel chan
+                       :msg/created-at :db/now
+                       :msg/text (str "Seed message " (rand-int 1000))}))))
 
 (comment
 
@@ -20,6 +33,11 @@
   ;; database by running `rm -r storage/xtdb` (DON'T run that in prod),
   ;; restarting your app, and calling add-fixtures again.
   (add-fixtures)
+
+  (defn get-secret [ctx k]
+  (some-> (get ctx k)
+          (System/getenv)
+          not-empty))
 
   (let [{:keys [biff/db] :as ctx} (get-context)]
     (q db
@@ -30,4 +48,11 @@
 
   ;; Check the terminal for output.
   (biff/submit-job (get-context) :echo {:foo "bar"})
-  (deref (biff/submit-job-for-result (get-context) :echo {:foo "bar"})))
+  (deref (biff/submit-job-for-result (get-context) :echo {:foo "bar"}))
+  
+  (seed-channels)
+  
+  (let [{:keys [biff/db] :as ctx} (get-context)]
+    (q db
+       '{:find (pull msg [*])
+         :where [[msg :msg/text]]})))
