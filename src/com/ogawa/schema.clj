@@ -12,11 +12,16 @@
                [:xt/id      :comm/id]
                [:comm/title :string]]
 
+   :stream/id :uuid
+   :stream    [:map {:closed true}
+               [:xt/id      :stream/id]
+               [:stream/title :string]]
+
    :mem/id     :uuid
    :membership [:map {:closed true}
                 [:xt/id     :mem/id]
                 [:mem/user  :user/id]
-                [:mem/comm  :comm/id]
+                [:mem/stream  :stream/id]
                 [:mem/roles [:set [:enum :admin]]]]
 
    :chan/id :uuid

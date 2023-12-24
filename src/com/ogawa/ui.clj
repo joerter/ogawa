@@ -62,7 +62,7 @@
           :where [[channel :chan/comm comm]]}
         (:xt/id community)))))
 
-(defn app-page [{:keys [user] :as ctx}]
+(defn app-page [{:keys [user] :as ctx} & body]
   (base
    ctx
    [:.bg-orange-50
@@ -75,7 +75,4 @@
                                  :class "inline"}
                                 [:button.text-teal-600.hover:text-teal-800 {:type "submit"}
                                  "Sign out"])]]
-     (biff/form
-      {:action "/stream"}
-      [:button.btn.w-full {:type "submit"} "New Stream"])
-     [:.h-3]]]))
+     body]]))

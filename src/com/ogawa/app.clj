@@ -9,7 +9,10 @@
 
 (defn app [ctx]
   (ui/app-page
-   ctx))
+   ctx
+   (biff/form
+      {:action "/stream"}
+      [:button.btn.w-full {:type "submit"} "New Stream"])))
 
 (defn new-community [{:keys [session] :as ctx}]
   (let [comm-id (random-uuid)]
@@ -23,6 +26,19 @@
                       :mem/roles #{:admin}}])
     {:status 303
      :headers {"Location" (str "/community/" comm-id)}}))
+
+(defn new-stream [{:keys [session] :as ctx}]
+  (let [stream-id (random-uuid)]
+    (biff/submit-tx ctx
+                    [{:db/doc-type :stream
+                      :xt/id stream-id
+                      :stream/title (str "Stream #" (rand-int 1000))}
+                     {:db/doc-type :membership
+                      :mem/user (:uid session)
+                      :mem/stream stream-id
+                      :mem/roles #{:admin}}])
+    {:status 303
+     :headers {"Location" (str "/stream/" stream-id)}}))
 
 (defn join-community [{:keys [user community] :as ctx}]
   (biff/submit-tx ctx
@@ -81,6 +97,11 @@
           :class "flex justify-center"}
          [:button.btn {:type "submit"} "Join this community"])
         [:div {:class "grow-[1.75]"}]]))))
+
+(defn stream [{:keys [biff/db user stream] :as ctx}]
+  (ui/app-page
+    ctx
+    [:h1 "Welcome to the show"]))
 
 (defn message-view [{:msg/keys [mem text created-at]}]
   (let [username (str "User " (subs (str mem) 0 4))]
@@ -180,6 +201,8 @@
 (def plugin
   {:routes ["" {:middleware [mid/wrap-signed-in]}
             ["/app"           {:get app}]
+            ["/stream"        {:post new-stream}]
+            ["/stream/:id"    {:get stream}]
             ["/community"     {:post new-community}]
             ["/community/:id" {:middleware [wrap-community]}
              [""      {:get community}]
