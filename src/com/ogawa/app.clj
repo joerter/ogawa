@@ -9,8 +9,7 @@
 
 (defn app [ctx]
   (ui/app-page
-   ctx
-   [:p "Select a community, or create a new one."]))
+   ctx))
 
 (defn new-community [{:keys [session] :as ctx}]
   (let [comm-id (random-uuid)]

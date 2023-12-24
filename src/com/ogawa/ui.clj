@@ -62,63 +62,20 @@
           :where [[channel :chan/comm comm]]}
         (:xt/id community)))))
 
-(defn app-page [{:keys [biff/db uri user community roles channel] :as ctx} & body]
+(defn app-page [{:keys [user] :as ctx}]
   (base
    ctx
-   [:.flex.bg-orange-50
+   [:.bg-orange-50
     {:hx-headers (cheshire/generate-string
                   {:x-csrf-token csrf/*anti-forgery-token*})}
-    [:.h-screen.w-80.p-3.pr-0.flex.flex-col.flex-grow
-     [:select
-      {:class '[text-sm
-                cursor-pointer
-                focus:border-teal-600
-                focus:ring-teal-600]
-       :onchange "window.location = this.value"}
-      [:option {:value "/app"}
-       "Select a community"]
-      (for [{:keys [mem/comm]} (:user/mems user)
-            :let [url (str "/community/" (:xt/id comm))]]
-        [:option.cursor-pointer
-         {:value url
-          :selected (when (str/starts-with? uri url)
-                      true)}
-         (:comm/title comm)])]
-     [:.h-4]
-     (for [chan (channels ctx)
-           :let [active (= (:xt/id chan) (:xt/id channel))
-                 href (str "/community/" (:xt/id community)
-                           "/channel/" (:xt/id chan))]]
-       [:.mt-4.flex.justify-between.leading-none
-        (if active
-          [:span.font-bold (:chan/title chan)]
-          [:a.link {:href href}
-           (:chan/title chan)])
-        (when (contains? roles :admin)
-          [:button.opacity-50.hover:opacity-100.flex.items-center
-           {:hx-delete href
-            :hx-confirm (str "Delete " (:chan/title chan) "?")
-            :hx-target "closest div"
-            :hx-swap "outerHTML"
-            :_ (when active
-                 (str "on htmx:afterRequest set window.location to '/community/" (:xt/id community) "'"))}
-           (icon :x {:class "w-3 h-3"})])])
-     [:.grow]
-     (when (contains? roles :admin)
-       [:<>
-        (biff/form
-         {:action (str "/community/" (:xt/id community) "/channel")}
-         [:button.btn.w-full {:type "submit"} "New channel"])
-        [:.h-3]])
+    [:.h-screen.w-full.p-3.flex.flex-col.flex-grow
+     [:.flex.justify-end.mb-3 [:.text-sm (:user/email user) " | "
+                               (biff/form
+                                {:action "/auth/signout"
+                                 :class "inline"}
+                                [:button.text-teal-600.hover:text-teal-800 {:type "submit"}
+                                 "Sign out"])]]
      (biff/form
-      {:action "/community"}
-      [:button.btn.w-full {:type "submit"} "New community"])
-     [:.h-3]
-     [:.text-sm (:user/email user) " | "
-      (biff/form
-       {:action "/auth/signout"
-        :class "inline"}
-       [:button.text-teal-600.hover:text-teal-800 {:type "submit"}
-        "Sign out"])]]
-    [:.h-screen.w-full.p-3.flex.flex-col
-     body]]))
+      {:action "/stream"}
+      [:button.btn.w-full {:type "submit"} "New Stream"])
+     [:.h-3]]]))

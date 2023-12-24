@@ -54,6 +54,7 @@
   (seed-channels)
 
   (pr {:john "is cool"})
+  (flush)
   
   (let [{:keys [biff/db] :as ctx} (get-context)]
     (q db
