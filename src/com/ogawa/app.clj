@@ -98,10 +98,12 @@
          [:button.btn {:type "submit"} "Join this community"])
         [:div {:class "grow-[1.75]"}]]))))
 
-(defn stream [{:keys [biff/db user stream] :as ctx}]
+(defn stream [{:keys [biff/db user stream roles] :as ctx}]
   (ui/app-page
     ctx
-    [:h1 "Welcome to the show"]))
+    [:div [:h1 "Welcome to the show"]
+     (when (contains? roles :admin)
+       [:h3 "You started this, btw"])]))
 
 (defn message-view [{:msg/keys [mem text created-at]}]
   (let [username (str "User " (subs (str mem) 0 4))]
@@ -190,6 +192,36 @@
       {:status 303
        :headers {"location" "/app"}})))
 
+; {:user/joined-at #inst "2023-12-20T02:28:25.538-00:00", 
+;  :user/email "test1@simplevelocity.com", 
+;  :xt/id #uuid "b247b6e0-504f-4000-9d4f-2f37d2a0507c", 
+;  :user/mems ({:mem/roles #{}, 
+;               :mem/user #uuid "b247b6e0-504f-4000-9d4f-2f37d2a0507c", 
+;               :mem/comm {:comm/title "Community #388", 
+;                          :xt/id #uuid "158e5ebd-328d-4ab6-9512-e61818a225b0"}, 
+;               :xt/id #uuid "04210f6f-6bb8-465d-b2fb-cef66902b67a"} 
+;              {:mem/user #uuid "b247b6e0-504f-4000-9d4f-2f37d2a0507c", 
+;               :mem/comm {:comm/title "Community #569", 
+;                          :xt/id #uuid "38438061-b37f-4fd7-ae91-a0e71617daf6"}, 
+;               :mem/roles #{:admin}, 
+;               :xt/id #uuid "5e0ab8b5-2169-46cb-8b74-0a40e0c32840"} 
+;              {:mem/user #uuid "b247b6e0-504f-4000-9d4f-2f37d2a0507c", 
+;               :mem/stream #uuid "7411090b-5037-40e8-a875-e3e46571baee", 
+;               :mem/roles #{:admin}, 
+;               :xt/id #uuid "eeadab49-64a1-4fec-a3a8-877a692fa4fc"})}
+
+(defn wrap-stream [handler]
+  (fn [{:keys [biff/db user path-params] :as ctx}]
+    (if-some [stream (xt/entity db (parse-uuid (:id path-params)))]
+      (let [mem (->> (:user/mems user)
+                     (filter (fn [mem]
+                               (= (:xt/id stream) (get-in mem [:mem/stream :xt/id]))))
+                     first)
+            roles (:mem/roles mem)]
+        (handler (assoc ctx :stream stream :roles roles :mem mem)))
+      {:status 303
+       :headers {"location" "/app"}})))
+
 (defn wrap-channel [handler]
   (fn [{:keys [biff/db user mem community path-params] :as ctx}]
     (let [channel (xt/entity db (parse-uuid (:chan-id path-params)))]
@@ -202,7 +234,8 @@
   {:routes ["" {:middleware [mid/wrap-signed-in]}
             ["/app"           {:get app}]
             ["/stream"        {:post new-stream}]
-            ["/stream/:id"    {:get stream}]
+            ["/stream/:id"    {:middleware [wrap-stream]}
+             ["" {:get stream}]]
             ["/community"     {:post new-community}]
             ["/community/:id" {:middleware [wrap-community]}
              [""      {:get community}]

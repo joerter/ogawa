@@ -12,7 +12,8 @@
   (fn [{:keys [biff/db session] :as ctx}]
     (if-some [user (xt/pull db
                             '[* {(:mem/_user {:as :user/mems})
-                                 [* {:mem/comm [*]}]}]
+                                 [* {:mem/comm [*]}
+                                  {:mem/stream [*]}]}]
                             (:uid session))]
       (handler (assoc ctx :user user))
       {:status 303
