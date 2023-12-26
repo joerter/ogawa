@@ -11,8 +11,8 @@
   (ui/app-page
    ctx
    (biff/form
-      {:action "/stream"}
-      [:button.btn.w-full {:type "submit"} "New Stream"])))
+    {:action "/stream"}
+    [:button.btn.w-full {:type "submit"} "New Stream"])))
 
 (defn new-community [{:keys [session] :as ctx}]
   (let [comm-id (random-uuid)]
@@ -100,10 +100,16 @@
 
 (defn stream [{:keys [biff/db user stream roles] :as ctx}]
   (ui/app-page
-    ctx
-    [:div [:h1 "Welcome to the show"]
-     (when (contains? roles :admin)
-       [:h3 "You started this, btw"])]))
+   ctx
+   [:div [:h1 "Welcome to the show"]
+    [:div.w-full.flex.justify-center
+     [:video.w-full
+      {:id "streamVideo" :autoplay true :playsinline true :controls false}]]
+    (when (contains? roles :admin)
+      [:button.btn {:type "button" :id "startStreamButton"} "Start the Stream"])
+    (if (contains? roles :admin)
+      [:script {:src "/streamer.js" :type "module"}]
+      [:script {:src "/viewer.js" :type "module"}])]))
 
 (defn message-view [{:msg/keys [mem text created-at]}]
   (let [username (str "User " (subs (str mem) 0 4))]
