@@ -21,7 +21,6 @@
    :membership [:map {:closed true}
                 [:xt/id     :mem/id]
                 [:mem/user  :user/id]
-                [:mem/comm  :comm/id]
                 [:mem/stream  :stream/id]
                 [:mem/roles [:set [:enum :admin]]]]
 

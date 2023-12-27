@@ -12,12 +12,21 @@ pc.onicecandidate = (event) => {
   console.log('got candidate', event);
 };
 
-const offerDescription = await pc.createOffer();
-await pc.setLocalDescription(offerDescription);
+const joinStreamButton = document.getElementById('joinStreamButton');
 
-const offer = {
-  sdp: offerDescription.sdp,
-  type: offerDescription.type,
-};
+async function createJoinOffer() {
+  const joinOfferInput = document.getElementById('joinOffer');
+  const offerDescription = await pc.createOffer();
+  await pc.setLocalDescription(offerDescription);
 
-console.log('created offer: ', offerDescription);
+  const offer = {
+    sdp: offerDescription.sdp,
+    type: offerDescription.type,
+  };
+  joinOfferInput.value = JSON.stringify(offer);
+  joinStreamButton.disabled = false;
+
+  console.log('created offer: ', offer);
+}
+
+createJoinOffer();

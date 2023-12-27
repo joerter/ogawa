@@ -99,17 +99,27 @@
         [:div {:class "grow-[1.75]"}]]))))
 
 (defn stream [{:keys [biff/db user stream roles] :as ctx}]
-  (ui/app-page
-   ctx
-   [:div [:h1 "Welcome to the show"]
-    [:div.w-full.flex.justify-center
-     [:video.w-full
-      {:id "streamVideo" :autoplay true :playsinline true :controls false}]]
-    (when (contains? roles :admin)
-      [:button.btn {:type "button" :id "startStreamButton"} "Start the Stream"])
-    (if (contains? roles :admin)
-      [:script {:src "/streamer.js" :type "module"}]
-      [:script {:src "/viewer.js" :type "module"}])]))
+  (let [href (str "/stream/" (:xt/id stream))]
+    (ui/app-page
+     ctx
+     [:div [:h1 "Welcome to the show"]
+      [:div.w-full.flex.justify-center
+       [:video.w-full
+        {:id "streamVideo" :autoplay true :playsinline true :controls false}]]
+      (if (contains? roles :admin)
+        [:div
+         [:button.btn {:type "button" :id "startStreamButton"} "Start the Stream"]
+         [:script {:src "/streamer.js" :type "module"}]]
+        [:div {:hx-ext "ws" :ws-connect (str href "/connect")}
+         (biff/form {:hx-post (str href "/join")
+                     :hx-target "#joinStreamButton"}
+                    [:input {:type "hidden" :id "joinOffer" :name "join-offer" :value ""}]
+                    [:button.btn {:type "submit" :id "joinStreamButton" :disabled true} "Join the Stream"])
+         [:script {:src "/viewer.js" :type "module"}]])])))
+
+(defn join-stream [{:keys [biff/db user stream params] :as ctx}]
+  (prn {:params params})
+  [:div "you joined the stream"])
 
 (defn message-view [{:msg/keys [mem text created-at]}]
   (let [username (str "User " (subs (str mem) 0 4))]
@@ -158,6 +168,20 @@
       [:.w-2]
       [:button.btn {:type "submit"} "Send"]))))
 
+(defn connect-stream [{:keys [com.ogawa/stream-clients] {stream-id :xt/id} :stream :as ctx}]
+  {:status 101
+   :headers {"upgrade" "websocket"
+             "connection" "upgrade"}
+   :ws {:on-connect (fn [ws]
+                      (prn :connect (swap! stream-clients update stream-id (fnil conj #{}) ws)))
+        :on-close (fn [ws status-code reason]
+                    (prn :disconnect
+                         (swap! stream-clients
+                                (fn [stream-clients]
+                                  (let [stream-clients (update stream-clients stream-id disj ws)]
+                                    (cond-> stream-clients
+                                      (empty? (get stream-clients stream-id)) (dissoc stream-id)))))))}})
+
 (defn connect [{:keys [com.ogawa/chat-clients] {chan-id :xt/id} :channel :as ctx}]
   {:status 101
    :headers {"upgrade" "websocket"
@@ -198,24 +222,6 @@
       {:status 303
        :headers {"location" "/app"}})))
 
-; {:user/joined-at #inst "2023-12-20T02:28:25.538-00:00", 
-;  :user/email "test1@simplevelocity.com", 
-;  :xt/id #uuid "b247b6e0-504f-4000-9d4f-2f37d2a0507c", 
-;  :user/mems ({:mem/roles #{}, 
-;               :mem/user #uuid "b247b6e0-504f-4000-9d4f-2f37d2a0507c", 
-;               :mem/comm {:comm/title "Community #388", 
-;                          :xt/id #uuid "158e5ebd-328d-4ab6-9512-e61818a225b0"}, 
-;               :xt/id #uuid "04210f6f-6bb8-465d-b2fb-cef66902b67a"} 
-;              {:mem/user #uuid "b247b6e0-504f-4000-9d4f-2f37d2a0507c", 
-;               :mem/comm {:comm/title "Community #569", 
-;                          :xt/id #uuid "38438061-b37f-4fd7-ae91-a0e71617daf6"}, 
-;               :mem/roles #{:admin}, 
-;               :xt/id #uuid "5e0ab8b5-2169-46cb-8b74-0a40e0c32840"} 
-;              {:mem/user #uuid "b247b6e0-504f-4000-9d4f-2f37d2a0507c", 
-;               :mem/stream #uuid "7411090b-5037-40e8-a875-e3e46571baee", 
-;               :mem/roles #{:admin}, 
-;               :xt/id #uuid "eeadab49-64a1-4fec-a3a8-877a692fa4fc"})}
-
 (defn wrap-stream [handler]
   (fn [{:keys [biff/db user path-params] :as ctx}]
     (if-some [stream (xt/entity db (parse-uuid (:id path-params)))]
@@ -241,7 +247,9 @@
             ["/app"           {:get app}]
             ["/stream"        {:post new-stream}]
             ["/stream/:id"    {:middleware [wrap-stream]}
-             ["" {:get stream}]]
+             ["" {:get stream}]
+             ["/connect" {:get connect-stream}]
+             ["/join" {:post join-stream}]]
             ["/community"     {:post new-community}]
             ["/community/:id" {:middleware [wrap-community]}
              [""      {:get community}]
