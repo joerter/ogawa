@@ -17,6 +17,14 @@
                [:xt/id      :stream/id]
                [:stream/title :string]]
 
+   :offer/id  :uuid
+   :offer     [:map {:closed true}
+               [:xt/id          :offer/id]
+               [:offer/sdp      :string]
+               [:offer/type     :string]
+               [:offer/stream   :stream/id]
+               [:offer/user     :user/id]]
+
    :mem/id     :uuid
    :membership [:map {:closed true}
                 [:xt/id     :mem/id]

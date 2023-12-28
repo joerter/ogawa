@@ -1,5 +1,6 @@
 (ns com.ogawa.app
   (:require
+   [cheshire.core :as cheshire]
    [com.biffweb :as biff :refer [q]]
    [com.ogawa.middleware :as mid]
    [com.ogawa.ui :as ui]
@@ -118,8 +119,15 @@
          [:script {:src "/viewer.js" :type "module"}]])])))
 
 (defn join-stream [{:keys [biff/db user stream params] :as ctx}]
-  (prn {:params params})
-  [:div "you joined the stream"])
+  (let [join-offer (-> params :join-offer cheshire/parse-string)
+        offer {:db/doc-type :offer
+               :xt/id (random-uuid)
+               :offer/sdp (get join-offer "sdp")
+               :offer/type (get join-offer "type")
+               :offer/stream (:xt/id stream)
+               :offer/user (:xt/id user)}]
+    (biff/submit-tx ctx [offer])
+    [:div "you joined the stream"]))
 
 (defn message-view [{:msg/keys [mem text created-at]}]
   (let [username (str "User " (subs (str mem) 0 4))]

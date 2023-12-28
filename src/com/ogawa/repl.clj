@@ -75,5 +75,10 @@
 
   (let [{:keys [biff/db] :as ctx} (get-context)]
     (q db
+       '{:find (pull offer [*])
+         :where [[offer :offer/sdp]]}))
+
+  (let [{:keys [biff/db] :as ctx} (get-context)]
+    (q db
        '{:find (pull msg [*])
          :where [[msg :msg/text]]})))
