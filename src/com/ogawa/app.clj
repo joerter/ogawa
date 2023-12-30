@@ -106,16 +106,16 @@
      [:div [:h1 "Welcome to the show"]
       [:div.w-full.flex.justify-center
        [:video.w-full
-        {:id "streamVideo" :autoplay true :playsinline true :controls false}]]
+        {:id "input-video" :autoplay true :playsinline true :controls false}]]
       (if (contains? roles :admin)
         [:div
          [:button.btn {:type "button" :id "startStreamButton"} "Start the Stream"]
          [:script {:src "/streamer.js" :type "module"}]]
         [:div {:hx-ext "ws" :ws-connect (str href "/connect")}
+         [:button.btn {:type "submit" :id "joinStreamButton"} "Join the Stream"]
          (biff/form {:hx-post (str href "/join")
                      :hx-target "#joinStreamButton"}
-                    [:input {:type "hidden" :id "joinOffer" :name "join-offer" :value ""}]
-                    [:button.btn {:type "submit" :id "joinStreamButton" :disabled true} "Join the Stream"])
+                    [:input {:type "hidden" :id "joinOffer" :name "join-offer" :value ""}])
          [:script {:src "/viewer.js" :type "module"}]])])))
 
 (defn join-stream [{:keys [biff/db user stream params] :as ctx}]

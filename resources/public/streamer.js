@@ -1,26 +1,13 @@
-const servers = {
-  iceServers: [
-    {
-      urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
-    },
-  ],
-  iceCandidatePoolSize: 10,
-};
+// Add a <video> element to the HTML page this code runs in:
+// <video id="input-video" autoplay muted></video>
 
-const pc = new RTCPeerConnection(servers);
-let localStream = null;
+import WHIPClient from "./WHIPClient.js"; // an example WHIP client, see https://github.com/cloudflare/workers-sdk/blob/main/templates/stream/webrtc/src/WHIPClient.ts
+
+const url = ""; // add the webRTC URL from your live input here
+const videoElement = document.getElementById("input-video");
 
 const startStreamButton = document.getElementById('startStreamButton');
-const streamVideo = document.getElementById('streamVideo');
 
-startStreamButton.onclick = async () => {
-  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-
-  // Push tracks from local stream to peer connection
-  localStream.getTracks().forEach((track) => {
-    pc.addTrack(track, localStream);
-  });
-
-
-  streamVideo.srcObject = localStream;
-};
+startStreamButton.onclick = () => {
+  const client = new WHIPClient(url, videoElement);
+}

@@ -1,32 +1,11 @@
-const servers = {
-  iceServers: [
-    {
-      urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
-    },
-  ],
-  iceCandidatePoolSize: 10,
-};
+// Add a <video> element to the HTML page this code runs in:
+// <video id="output-video" autoplay muted></video>
 
-const pc = new RTCPeerConnection(servers);
-pc.onicecandidate = (event) => {
-  console.log('got candidate', event);
-};
+import WHEPClient from "./WHEPClient.js"; // an example WHEP client, see https://github.com/cloudflare/workers-sdk/blob/main/templates/stream/webrtc/src/WHEPClient.ts
 
-const joinStreamButton = document.getElementById('joinStreamButton');
+const url = ""; // add the webRTCPlayback URL from your live input here
+const videoElement = document.getElementById("input-video");
 
-async function createJoinOffer() {
-  const joinOfferInput = document.getElementById('joinOffer');
-  const offerDescription = await pc.createOffer();
-  await pc.setLocalDescription(offerDescription);
-
-  const offer = {
-    sdp: offerDescription.sdp,
-    type: offerDescription.type,
-  };
-  joinOfferInput.value = JSON.stringify(offer);
-  joinStreamButton.disabled = false;
-
-  console.log('created offer: ', offer);
+joinStreamButton.onclick = () => {
+  const client = new WHEPClient(url, videoElement);
 }
-
-createJoinOffer();
