@@ -42,7 +42,7 @@
 (defn page [ctx & body]
   (base
    ctx
-   [:.bg-orange-50.flex.flex-col.flex-grow
+   [:.bg-white.flex.flex-col.flex-grow
     [:.flex-grow]
     [:.p-3.mx-auto.max-w-screen-sm.w-full
      (when (bound? #'csrf/*anti-forgery-token*)
