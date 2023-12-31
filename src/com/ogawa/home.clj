@@ -177,6 +177,74 @@
 (defn enter-code-page [{:keys [recaptcha/site-key params] :as ctx}]
   (ui/page
    (assoc ctx ::ui/recaptcha true)
+   [:div {:class "flex min-h-full flex-col justify-center px-6 py-12 lg:px-8"}
+    (biff/form
+     {:action "/auth/verify-code"
+      :id "code-form"
+      :hidden {:email (:email params)}}
+     (biff/recaptcha-callback "submitCode" "code-form")
+     [:div
+      [:div
+       {:class "sm:mx-auto sm:w-full sm:max-w-sm"}
+       [:img
+        {:class "mx-auto h-10 w-auto",
+         :src
+         "/img/eel.svg",
+         :alt "Ogawa"}]
+       [:h2
+        {:class
+         "mt-5 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900"}
+        "Sign in to " settings/app-name]]
+      [:div
+       {:class "my-5 sm:mx-auto sm:w-full sm:max-w-sm"}
+       [:div
+        [:label
+         {:for "code",
+          :class "block text-sm font-medium leading-6 text-gray-900 text-center"}
+         "Enter the 6-digit code that we sent to "
+         [:span.font-bold (:email params)]]
+        [:div
+         {:class "mb-2 mt-2"}
+         [:input
+          {:id "code",
+           :name "code",
+           :type "text",
+           :required "",
+           :autofocus "",
+           :class
+           "block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"}]]]
+       [:div.mb-2
+        [:button
+         (merge (when site-key
+                  {:data-sitekey site-key
+                   :data-callback "submitCode"})
+                {:type "submit"
+                 :class "flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 g-recaptcha"})
+         "Sign in"]]]])
+    (when-some [error (:error params)]
+      [:<>
+       [:.h-1]
+       [:.text-sm.text-red-600
+        (case error
+          "invalid-code" "Invalid code."
+          "There was an error.")]])
+    [:.flex.justify-center
+     (biff/form
+      {:action "/auth/send-code"
+       :id "signin"
+       :hidden {:email (:email params)
+                :on-error "/signin"}}
+      (biff/recaptcha-callback "submitSignin" "signin")
+      [:button.link.g-recaptcha
+       (merge (when site-key
+                {:data-sitekey site-key
+                 :data-callback "submitSignin"})
+              {:type "submit"})
+       "Send another code"])]]))
+
+(defn old-enter-code-page [{:keys [recaptcha/site-key params] :as ctx}]
+  (ui/page
+   (assoc ctx ::ui/recaptcha true)
    (biff/form
     {:action "/auth/verify-code"
      :id "code-form"
