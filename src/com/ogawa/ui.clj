@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [com.ogawa.settings :as settings]
             [com.ogawa.ui.icons :refer [icon]]
+            [com.ogawa.ui.components :as components]
             [com.biffweb :as biff :refer [q]]
             [ring.middleware.anti-forgery :as csrf]))
 
@@ -65,16 +66,11 @@
 (defn app-page [{:keys [user] :as ctx} & body]
   (base
    ctx
-   [:.bg-orange-50
+   [:.bg-white
     {:hx-headers (cheshire/generate-string
                   {:x-csrf-token csrf/*anti-forgery-token*})}
-    [:.h-screen.w-full.p-3.flex.flex-col.flex-grow
-     [:.flex.justify-end.mb-3 [:.text-sm (:user/email user) " | "
-                               (biff/form
-                                {:action "/auth/signout"
-                                 :class "inline"}
-                                [:button.text-teal-600.hover:text-teal-800 {:type "submit"}
-                                 "Sign out"])]]
+    [:.h-screen.mx-auto.max-w-7xl.sm:px-6.lg:px-8.py-3
+     [:.flex.justify-end.mb-3 components/profile-dropdown]
      body]
     [:script {:src "/negotiateConnectionWithClientOffer.js" :type "module"}]
     [:script {:src "https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/8.1.2/adapter.min.js"
