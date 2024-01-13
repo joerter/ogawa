@@ -27,6 +27,7 @@
                                      [:script {:src "https://unpkg.com/htmx.org@1.9.0"}]
                                      [:script {:src "https://unpkg.com/htmx.org/dist/ext/ws.js"}]
                                      [:script {:src "https://unpkg.com/hyperscript.org@0.9.8"}]
+                                     [:script {:src "https://unpkg.com/alpinejs" :defer ""}]
                                      [:link {:href "/apple-touch-icon.png", :sizes "180x180", :rel "apple-touch-icon"}]
                                      [:link {:href "/favicon-32x32.png", :sizes "32x32", :type "image/png", :rel "icon"}]
                                      [:link {:href "/favicon-16x16.png", :sizes "16x16", :type "image/png", :rel "icon"}]
