@@ -6,14 +6,36 @@
    [com.ogawa.ui :as ui]
    [ring.adapter.jetty9 :as jetty]
    [rum.core :as rum]
-   [xtdb.api :as xt]))
+   [xtdb.api :as xt]
+   [com.ogawa.ui.icons :as icons]))
 
 (defn app [ctx]
   (ui/app-page
    ctx
-   (biff/form
-    {:action "/stream"}
-    [:button.btn.w-full {:type "submit"} "New Stream"])))
+   [:div
+    {:class "text-center"}
+    [:div.flex.justify-center icons/sparkles ]
+    [:h3
+     {:class "mt-2 text-sm font-semibold text-gray-900"}
+     "No past streams"]
+    [:p
+     {:class "mt-1 text-sm text-gray-500"}
+     "Start a new stream now!"]
+    [:div
+     {:class "mt-6"}
+     (biff/form {:action "/stream"} [:button
+      {:type "submit",
+       :class
+       "inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"}
+      [:svg
+       {:class "-ml-0.5 mr-1.5 h-5 w-5",
+        :viewBox "0 0 20 20",
+        :fill "currentColor",
+        :aria-hidden "true"}
+       [:path
+        {:d
+         "M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"}]]
+      "New Stream"])]]))
 
 (defn new-community [{:keys [session] :as ctx}]
   (let [comm-id (random-uuid)]
